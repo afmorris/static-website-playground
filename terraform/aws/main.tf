@@ -64,10 +64,11 @@ resource "aws_s3_bucket_policy" "this" {
 }
 
 resource "aws_s3_bucket_object" "index" {
-  bucket = aws_s3_bucket.this.id
-  key    = "index.html"
-  source = "index.html"
-  etag   = filemd5("index.html")
+  bucket       = aws_s3_bucket.this.id
+  key          = "index.html"
+  source       = "index.html"
+  etag         = filemd5("index.html")
+  content_type = "text/html"
 }
 
 data "cloudflare_zone" "this" {
