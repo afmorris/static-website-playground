@@ -27,7 +27,7 @@ provider "cloudflare" {
 }
 
 locals {
-  site_domain = "aws.terraform.static.morriscloud.com"
+  site_domain = "aws-terraform-static.morriscloud.com"
 }
 
 data "aws_iam_policy_document" "this" {
