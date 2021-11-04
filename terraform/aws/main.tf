@@ -26,6 +26,27 @@ provider "aws" {
 provider "cloudflare" {
 }
 
+data "aws_iam_policy_document" "this" {
+  statement {
+    sid    = "PublicReadGetObject"
+    effect = "Allow"
+
+    actions = [
+      "s3:GetObject"
+    ]
+
+    resources = [
+      "${aws_s3_bucket.this.arn}/*"
+    ]
+
+    principals {
+      type        = "*"
+      identifiers = ["*"]
+    }
+
+  }
+}
+
 resource "aws_s3_bucket" "this" {
   bucket        = "aws.terraform.static.morriscloud.com"
   acl           = "public-read"
@@ -35,6 +56,11 @@ resource "aws_s3_bucket" "this" {
     index_document = "index.html"
     error_document = "index.html"
   }
+}
+
+resource "aws_s3_bucket_policy" "this" {
+  bucket = aws_s3_bucket.this.id
+  policy = data.aws_iam_policy_document.this.json
 }
 
 resource "aws_s3_bucket_object" "index" {
