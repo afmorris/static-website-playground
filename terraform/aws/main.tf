@@ -26,6 +26,10 @@ provider "aws" {
 provider "cloudflare" {
 }
 
+locals {
+  site_domain = "aws.terraform.static.morriscloud.com"
+}
+
 data "aws_iam_policy_document" "this" {
   statement {
     sid    = "PublicReadGetObject"
@@ -48,7 +52,7 @@ data "aws_iam_policy_document" "this" {
 }
 
 resource "aws_s3_bucket" "this" {
-  bucket        = "aws.terraform.static.morriscloud.com"
+  bucket        = local.site_domain
   acl           = "public-read"
   force_destroy = true
 
@@ -77,9 +81,9 @@ data "cloudflare_zone" "this" {
 
 resource "cloudflare_record" "this" {
   zone_id = data.cloudflare_zone.this.zone_id
-  name    = "aws.terraform.static"
-  type    = "CNAME"
+  name    = local.site_domain
   value   = aws_s3_bucket.this.website_endpoint
+  type    = "CNAME"
   ttl     = 1
   proxied = true
 }
