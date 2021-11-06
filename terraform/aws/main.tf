@@ -15,7 +15,7 @@ terraform {
     organization = "morriscloud"
 
     workspaces {
-      name = "aws-terraform"
+      name = "static-website-playground-aws-terraform"
     }
   }
 }
