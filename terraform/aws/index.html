@@ -19,7 +19,7 @@
   <meta name="theme-color" content="#7952b3">
 </head>
 
-<body class="d-flex flex-column h-100 line-numbers" data-prismjs-copy="📋">
+<body class="d-flex flex-column h-100 line-numbers">
 
   <main class="flex-shrink-0">
     <div class="container">
@@ -27,9 +27,7 @@
       <p class="lead">Terraform on AWS</p>
       <hr />
       <h2>Provider and Backend Configuration</h2>
-      <pre>
-        <code class="language-hcl">
-terraform {
+      <pre><code class="language-hcl">terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
@@ -49,9 +47,77 @@ terraform {
       name = "static-website-playground-aws-terraform"
     }
   }
+}</code></pre>
+      <hr />
+      <h2>
+        AWS Configuration
+      </h2>
+      <pre><code class="language-hcl">locals {
+  site_domain = "aws-terraform-static.morriscloud.com"
 }
-        </code>
-      </pre>
+
+data "aws_iam_policy_document" "this" {
+  statement {
+    sid    = "PublicReadGetObject"
+    effect = "Allow"
+
+    actions = [
+      "s3:GetObject"
+    ]
+
+    resources = [
+      "${aws_s3_bucket.this.arn}/*"
+    ]
+
+    principals {
+      type        = "*"
+      identifiers = ["*"]
+    }
+
+  }
+}
+
+resource "aws_s3_bucket" "this" {
+  bucket        = local.site_domain
+  acl           = "public-read"
+  force_destroy = true
+
+  website {
+    index_document = "index.html"
+    error_document = "index.html"
+  }
+}
+
+resource "aws_s3_bucket_policy" "this" {
+  bucket = aws_s3_bucket.this.id
+  policy = data.aws_iam_policy_document.this.json
+}
+
+resource "aws_s3_bucket_object" "index" {
+  bucket       = aws_s3_bucket.this.id
+  key          = "index.html"
+  source       = "index.html"
+  etag         = filemd5("index.html")
+  content_type = "text/html"
+}</code></pre>
+      <hr />
+      <h2>Cloudflare Configuration</h2>
+      <pre><code class="language-hcl">locals {
+  site_domain = "aws-terraform-static.morriscloud.com"
+}
+
+data "cloudflare_zone" "this" {
+  name = "morriscloud.com"
+}
+
+resource "cloudflare_record" "this" {
+  zone_id = data.cloudflare_zone.this.zone_id
+  name    = local.site_domain
+  value   = aws_s3_bucket.this.website_endpoint
+  type    = "CNAME"
+  ttl     = 1
+  proxied = true
+}</code></pre>
     </div>
   </main>
 
