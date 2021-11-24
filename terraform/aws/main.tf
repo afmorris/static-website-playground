@@ -21,6 +21,11 @@ terraform {
 }
 
 provider "aws" {
+  default_tags {
+    tags = {
+      Project = "Static Website Playground"
+    }
+  }
 }
 
 provider "cloudflare" {
@@ -55,7 +60,6 @@ resource "aws_s3_bucket" "this" {
   bucket        = local.site_domain
   acl           = "public-read"
   force_destroy = true
-
   website {
     index_document = "index.html"
     error_document = "index.html"
