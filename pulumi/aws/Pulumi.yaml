@@ -1,0 +1,3 @@
+name: static-website-playground-aws-pulumi
+runtime: dotnet
+description: Testing C#/AWS/Pulumi for my static website playground project.
