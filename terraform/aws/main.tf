@@ -2,12 +2,12 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "~> 3.66"
+      version = "~> 4.16"
     }
 
     cloudflare = {
       source  = "cloudflare/cloudflare"
-      version = "~> 3.4"
+      version = "~> 3.15"
     }
   }
 
@@ -58,12 +58,24 @@ data "aws_iam_policy_document" "this" {
 
 resource "aws_s3_bucket" "this" {
   bucket        = local.site_domain
-  acl           = "public-read"
   force_destroy = true
-  website {
-    index_document = "index.html"
-    error_document = "index.html"
+}
+
+resource "aws_s3_bucket_website_configuration" "this" {
+  bucket = aws_s3_bucket.this.bucket
+
+  index_document {
+    suffix = "index.html"
   }
+
+  error_document {
+    key = "index.html"
+  }
+}
+
+resource "aws_s3_bucket_acl" "this" {
+  bucket = aws_s3_bucket.this.bucket
+  acl    = "public-read"
 }
 
 resource "aws_s3_bucket_policy" "this" {
@@ -71,8 +83,8 @@ resource "aws_s3_bucket_policy" "this" {
   policy = data.aws_iam_policy_document.this.json
 }
 
-resource "aws_s3_bucket_object" "index" {
-  bucket       = aws_s3_bucket.this.id
+resource "aws_s3_object" "index" {
+  bucket       = aws_s3_bucket.this.bucket
   key          = "index.html"
   source       = "index.html"
   etag         = filemd5("index.html")
